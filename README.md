@@ -1,6 +1,7 @@
 Yii2-image
 ==========
-thumbler
+This extension for image manipulation.
+Based on [intervention/image](http://image.intervention.io/)
 
 Installation
 ------------
@@ -21,11 +22,24 @@ or add
 
 to the require section of your `composer.json` file.
 
-
 Usage
 -----
 
-Once the extension is installed, simply use it in your code by  :
+Add to your application config
+
+```
+components => [
+    'image' => [
+        'class' => 'ostashevdv\image\ImageManager',
+        'cachePath' => '@webroot/icache/'
+    ]
+]
+```
+
+ Use it in your code by  :
 
 ```php
-<?= \ostashevdv\image\AutoloadExample::widget(); ?>```
+    if ($img = \Yii::$app->image->thumb('https://www.google.ru/images/srpr/logo11w.png', 120, 120)) {
+        echo Html::img($img);
+    }
+```
