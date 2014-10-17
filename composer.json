@@ -1,0 +1,22 @@
+{
+    "name": "ostashevdv/yii2-image",
+    "description": "thumbler",
+    "type": "yii2-extension",
+    "keywords": ["yii2"," image"," thumb"," gd"," imagick"],
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Ostashev Dmitriy",
+            "email": "ostashevdv@gmail.com"
+        }
+    ],
+    "require": {
+        "yiisoft/yii2": "*",
+        "intervention/image": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "ostashevdv\\image\\": ""
+        }
+    }
+}
