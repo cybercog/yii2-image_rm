@@ -9,6 +9,10 @@ namespace ostashevdv\image;
 
 
 use yii\base\Component;
+use yii\base\Exception;
+use yii\helpers\FileHelper;
+use yii\helpers\StringHelper;
+use yii\helpers\VarDumper;
 
 class ImageManager extends Component
 {
@@ -42,11 +46,35 @@ class ImageManager extends Component
         return $this->createDriver()->newImage($width, $height, $background);
     }
 
-    public function thumb($data, $width, $height, $cachePath=null)
+    public function thumb($data, $width, $height, $cacheDir=null)
     {
-        if ($cachePath===null) {
-            $cachePath = $this->cachePath;
+        if ($cacheDir===null) {
+            $cacheDir = $this->cachePath;
         }
+
+        $src['md5'] = md5($data);
+        $src['name'] = StringHelper::basename($data);
+        $src['ext'] = pathinfo($src['name'], PATHINFO_EXTENSION);
+
+        $dest['name'] = $src['md5']."[{$width}x{$height}].".$src['ext'];
+        $dest['dir'] = \Yii::getAlias($cacheDir).DIRECTORY_SEPARATOR.
+            substr($src['md5'], 0, 3).DIRECTORY_SEPARATOR.
+            substr($src['md5'], 2, 3).DIRECTORY_SEPARATOR.
+            substr($src['md5'], 5, 3).DIRECTORY_SEPARATOR;
+        $dest['dir'] = FileHelper::normalizePath($dest['dir']);
+        $dest['path'] = $dest['dir'].DIRECTORY_SEPARATOR.$dest['name'];
+        $dest['url'] = FileHelper::normalizePath($dest['path'], '/');
+
+        if (!file_exists($dest['url'])) {
+            try{
+                FileHelper::createDirectory($dest['dir']);
+                $this->make($data)->fit($width, $height)->save($dest['path']);
+            } catch(\Exception $e) {
+                \Yii::getLogger()->log('THUMB: '.$e->getMessage(), 0);
+                return null;
+            }
+        }
+        return $dest['url'];
     }
 
     /**
