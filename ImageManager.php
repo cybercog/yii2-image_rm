@@ -11,6 +11,7 @@ namespace ostashevdv\image;
 use yii\base\Component;
 use yii\helpers\FileHelper;
 use yii\helpers\StringHelper;
+use yii\helpers\VarDumper;
 
 class ImageManager extends Component
 {
@@ -59,6 +60,7 @@ class ImageManager extends Component
             $cacheDir = $this->cachePath;
         }
 
+
         $src['md5'] = md5($data);
         $src['name'] = StringHelper::basename($data);
         $src['ext'] = pathinfo($src['name'], PATHINFO_EXTENSION);
@@ -68,14 +70,16 @@ class ImageManager extends Component
             substr($src['md5'], 0, 3).DIRECTORY_SEPARATOR.
             substr($src['md5'], 2, 3).DIRECTORY_SEPARATOR.
             substr($src['md5'], 5, 3).DIRECTORY_SEPARATOR;
-        $dest['dir'] = FileHelper::normalizePath($dest['dir']);
+        $dest['url'] = FileHelper::normalizePath($dest['dir'].'/'.$dest['name'], '/');
+        $dest['dir'] = FileHelper::normalizePath(\Yii::getAlias('@webroot').DIRECTORY_SEPARATOR.$dest['dir']);
         $dest['path'] = $dest['dir'].DIRECTORY_SEPARATOR.$dest['name'];
-        $dest['url'] = FileHelper::normalizePath($dest['path'], '/');
+
 
         if (!file_exists($dest['path'])) {
             try{
+                $data = parse_url($data)['host'] ? ltrim($data, '/') : $data ;
                 FileHelper::createDirectory($dest['dir']);
-                $this->make($data)->fit($width, $height)->save($dest['path']);
+                $this->make(ltrim($data,'/'))->fit($width, $height)->save($dest['path']);
             } catch(\Exception $e) {
                 \Yii::getLogger()->log('THUMB: '.$e->getMessage(), 0);
                 return null;
