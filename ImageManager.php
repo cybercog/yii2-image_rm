@@ -9,10 +9,8 @@ namespace ostashevdv\image;
 
 
 use yii\base\Component;
-use yii\base\Exception;
 use yii\helpers\FileHelper;
 use yii\helpers\StringHelper;
-use yii\helpers\VarDumper;
 
 class ImageManager extends Component
 {
@@ -46,6 +44,15 @@ class ImageManager extends Component
         return $this->createDriver()->newImage($width, $height, $background);
     }
 
+    /**
+     * Create thumbnail or return src if thumb already created
+     *
+     * @param mixed $data
+     * @param integer $width
+     * @param integer $height
+     * @param null|string $cacheDir
+     * @return null|string
+     */
     public function thumb($data, $width, $height, $cacheDir=null)
     {
         if ($cacheDir===null) {
