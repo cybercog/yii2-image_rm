@@ -72,7 +72,7 @@ class ImageManager extends Component
         $dest['path'] = $dest['dir'].DIRECTORY_SEPARATOR.$dest['name'];
         $dest['url'] = FileHelper::normalizePath($dest['path'], '/');
 
-        if (!file_exists($dest['url'])) {
+        if (!file_exists($dest['path'])) {
             try{
                 FileHelper::createDirectory($dest['dir']);
                 $this->make($data)->fit($width, $height)->save($dest['path']);
