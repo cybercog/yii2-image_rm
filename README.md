@@ -11,13 +11,13 @@ The preferred way to install this extension is through [composer](http://getcomp
 Either run
 
 ```
-php composer.phar require --prefer-dist ostashevdv/yii2-image "*"
+php composer.phar require --prefer-dist ostashevdv/yii2-image "dev-master"
 ```
 
 or add
 
 ```
-"ostashevdv/yii2-image": "*"
+"ostashevdv/yii2-image": "dev-master"
 ```
 
 to the require section of your `composer.json` file.

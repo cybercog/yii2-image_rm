@@ -7,17 +7,16 @@
 
 namespace ostashevdv\image;
 
-
+use Yii;
 use yii\base\Component;
 use yii\helpers\FileHelper;
-use yii\helpers\StringHelper;
-use yii\helpers\VarDumper;
 
 class ImageManager extends Component
 {
-    public $driver = 'gd';
+    public $driver = 'imagick';
 
-    public $cachePath;
+    public $cachePath = '@web/assets/thumbs/';
+
 
     /**
      * Initiates an Image instance from different input types
@@ -54,38 +53,37 @@ class ImageManager extends Component
      * @param null|string $cacheDir
      * @return null|string
      */
-    public function thumb($data, $width, $height, $cacheDir=null)
+    public function thumb($url, $width, $height, $cacheDir=null)
     {
         if ($cacheDir===null) {
             $cacheDir = $this->cachePath;
         }
 
+        if (parse_url($url, PHP_URL_HOST) == null) {
+            $url = Yii::$app->homeUrl.'/'.ltrim($url,'/');
+        }
 
-        $src['md5'] = md5($data);
-        $src['name'] = StringHelper::basename($data);
-        $src['ext'] = pathinfo($src['name'], PATHINFO_EXTENSION);
+        $urlNorm = new UrlNormalizer($url);
+        $url = $urlNorm->normalize();
 
-        $dest['name'] = $src['md5']."[{$width}x{$height}].".$src['ext'];
-        $dest['dir'] = \Yii::getAlias($cacheDir).DIRECTORY_SEPARATOR.
-            substr($src['md5'], 0, 3).DIRECTORY_SEPARATOR.
-            substr($src['md5'], 2, 3).DIRECTORY_SEPARATOR.
-            substr($src['md5'], 5, 3).DIRECTORY_SEPARATOR;
-        $dest['url'] = FileHelper::normalizePath($dest['dir'].'/'.$dest['name'], '/');
-        $dest['dir'] = FileHelper::normalizePath(\Yii::getAlias('@webroot').DIRECTORY_SEPARATOR.$dest['dir']);
-        $dest['path'] = $dest['dir'].DIRECTORY_SEPARATOR.$dest['name'];
+        $dest['name'] = md5($url)."[{$width}x{$height}].".pathinfo($url, PATHINFO_EXTENSION);
+        $dest['dir'] = Yii::getAlias($cacheDir).
+            substr(md5($url), 0, 3).'/'.
+            substr(md5($url), 2, 3).'/'.
+            substr(md5($url), 5, 3).'/';
 
+        $dest['path'] = FileHelper::normalizePath(Yii::getAlias('@webroot').DIRECTORY_SEPARATOR.$dest['dir']);
 
-        if (!file_exists($dest['path'])) {
-            try{
-                $data = parse_url($data)['host'] ? ltrim($data, '/') : $data ;
-                FileHelper::createDirectory($dest['dir']);
-                $this->make(ltrim($data,'/'))->fit($width, $height)->save($dest['path']);
-            } catch(\Exception $e) {
-                \Yii::getLogger()->log('THUMB: '.$e->getMessage(), 0);
+        if (!file_exists($dest['path'].$dest['name'])) {
+            try {
+                FileHelper::createDirectory($dest['path']);
+                $this->make($url)->fit($width, $height)->save($dest['path'].DIRECTORY_SEPARATOR.$dest['name']);
+            } catch (\Exception $e) {
                 return null;
             }
         }
-        return $dest['url'];
+        return $dest['dir'].$dest['name'];
+
     }
 
     /**
